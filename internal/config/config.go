@@ -10,10 +10,11 @@ const (
 )
 
 type Config struct {
-	ConnectionString string `yaml:"connectionString"`
-	Address          string `yaml:"address"`
-	JwtSecret        string `yaml:"address"`
-	TokenTimeToLive  string `yaml:"address"`
+	ConnectionString       string `yaml:"connectionString"`
+	Address                string `yaml:"address"`
+	JwtSecret              string `yaml:"jwt_secret"`
+	TokenTimeToLiveInHours int    `yaml:"token_time_to_live_in_hours"`
+	Salt                   string `yaml:"salt"`
 }
 
 func LoadConfig() *Config {
