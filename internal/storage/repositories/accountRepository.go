@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"auth-service/internal/domain/entities"
-	"auth-service/internal/domain/repositories"
 	"auth-service/internal/storage"
 	"auth-service/internal/storage/dbModels"
 	"context"
@@ -13,10 +12,9 @@ type AccountRepository struct {
 	db *pgx.Conn
 }
 
-func NewAccountRepository(db *pgx.Conn) *repositories.AccountRepositoryContract {
-	return &AccountRepository{db: db}
+func NewAccountRepository(conn *pgx.Conn) *AccountRepository {
+	return &AccountRepository{db: conn}
 }
-
 func (r *AccountRepository) GetByUsernameWithClaims(ctx context.Context, username string) (entities.Account, error) {
 	sql := `select u.id, u.username, u.email, u.hashed_password 
 				from account u 
@@ -62,14 +60,41 @@ func (r *AccountRepository) GetByUsernameWithClaims(ctx context.Context, usernam
 	return account, nil
 }
 
-func (r *AccountRepository) UpdateAccount(account entities.Account) (entities.Account, error) {
+func (r *AccountRepository) UpdateAccountCredentials(ctx context.Context, account entities.Account) error {
+	sql := `update account set username = $1, email = $2, hashed_password = $3`
 
+	_, err := r.db.Exec(ctx, sql, account.Username, account.Email, account.HashedPassword)
+	return err
 }
 
-func (r *AccountRepository) DeleteAccount(account entities.Account) error {
+func (r *AccountRepository) AddClaimToAccount(ctx context.Context, account entities.Account, claim entities.Claim) error {
+	sql := `insert into account_claim (account_id, claim_id) values ($1, $2)`
 
+	_, err := r.db.Exec(ctx, sql, account.Id, claim.Id)
+
+	return err
 }
 
-func (r *AccountRepository) CreateAccount(account entities.Account) (entities.Account, error) {
+func (r *AccountRepository) RemoveClaimFromAccount(ctx context.Context, account entities.Account, claim entities.Claim) error {
+	sql := `delete from account_claim as ac where ac.account_id = $1 and ac.claim_id = $2`
 
+	_, err := r.db.Exec(ctx, sql, account.Id, claim.Id)
+
+	return err
+}
+
+func (r *AccountRepository) DeleteAccount(ctx context.Context, account entities.Account) error {
+	sql := `delete from account as a where a.id = $1`
+
+	_, err := r.db.Exec(ctx, sql, account.Id)
+
+	return err
+}
+
+func (r *AccountRepository) CreateAccount(ctx context.Context, account entities.Account) error {
+	sql := `insert into account(username, email, hashed_password) values ($1, $2, $3)`
+
+	_, err := r.db.Exec(ctx, sql, account.Username, account.Email, account.HashedPassword)
+
+	return err
 }

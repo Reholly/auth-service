@@ -11,9 +11,9 @@ const (
 
 type Config struct {
 	ConnectionString string `yaml:"connectionString"`
-	MigrationsPath   string `yaml:"migrationsPath"`
 	Address          string `yaml:"address"`
-	DriverName       string `yaml:"driverName"`
+	JwtSecret        string `yaml:"address"`
+	TokenTimeToLive  string `yaml:"address"`
 }
 
 func LoadConfig() *Config {
