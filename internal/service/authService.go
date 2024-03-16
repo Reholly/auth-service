@@ -11,28 +11,35 @@ import (
 )
 
 type AuthService struct {
-	accountRepository domain.AccountRepository
-	tokenService      domain.TokenService
-	mailService       domain.MailService
-	config            config.Config
+	accountRepository      domain.AccountRepository
+	accountClaimRepository domain.AccountClaimRepository
+	tokenService           domain.TokenService
+	mailService            domain.MailService
+	config                 config.Config
 }
 
 func (as *AuthService) LogIn(ctx context.Context, username, password string) (string, error) {
-	account, err := as.accountRepository.GetByUsernameWithClaims(ctx, username)
+	dbAccount, err := as.accountRepository.GetAccountByUsername(ctx, username)
 
 	if err != nil {
 		return "", err
 	}
 
-	if account.HashedPassword != as.hash(password) {
+	if dbAccount.HashedPassword != as.hash(password) {
 		return "", ErrorWrongPassword
 	}
-	account.Claims = append(account.Claims, domain.Claim{
+
+	claims, err := as.accountClaimRepository.GetClaimsByUsername(ctx, username)
+	claims = append(claims, domain.Claim{
 		Title: "username",
-		Value: account.Username,
+		Value: username,
 	})
 
-	token, err := as.tokenService.CreateToken(account.Claims)
+	if err != nil {
+		return "", err
+	}
+
+	token, err := as.tokenService.CreateToken(claims)
 
 	if err != nil {
 		return "", err
@@ -41,8 +48,8 @@ func (as *AuthService) LogIn(ctx context.Context, username, password string) (st
 	return token, nil
 }
 
-func (as *AuthService) RegisterAccount(ctx context.Context, account domain.Account) error {
-	ok, err := as.accountRepository.CheckIfExistsAccountWithCredentials(ctx, account.Username, account.Email)
+func (as *AuthService) RegisterAccount(ctx context.Context, username, email, password string) error {
+	ok, err := as.accountRepository.CheckIfExistsAccountWithCredentials(ctx, username, email)
 
 	if err != nil {
 		return err
@@ -52,14 +59,24 @@ func (as *AuthService) RegisterAccount(ctx context.Context, account domain.Accou
 		return ErrorAccountAlreadyExists
 	}
 
-	err = as.accountRepository.CreateAccount(ctx, account)
+	err = as.accountRepository.CreateAccount(ctx, username, email, as.hash(password))
+
 	if err != nil {
 		return err
 	}
-	confirmationCode := as.hash(account.Username)
+
+	err = as.accountClaimRepository.AddClaimByUsername(ctx, username, domain.StudentRole)
+	if err != nil {
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+	confirmationCode := as.hash(username)
 
 	params := url.Values{}
-	params.Set("username", account.Username)
+	params.Set("username", username)
 	params.Set("code", confirmationCode)
 	confirmationUrl := fmt.Sprintf("%s?%s", as.config.EmailConfirmationUrlBase, params.Encode())
 	confirmationMessage := fmt.Sprintf("Для подтверждения почты перейдите по ссылке: <a href='%s'>ссылке.</a>", confirmationUrl)
@@ -69,7 +86,10 @@ func (as *AuthService) RegisterAccount(ctx context.Context, account domain.Accou
 		return err
 	}
 
-	as.accountRepository.CreateAccount(ctx, account)
+	err = as.accountRepository.CreateAccount(ctx, username, email, password)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -82,7 +102,7 @@ func (as *AuthService) ConfirmEmail(ctx context.Context, code, username string) 
 }
 
 func (as *AuthService) ResetPassword(ctx context.Context, username, oldPassword, newPassword string) error {
-	account, err := as.accountRepository.GetByUsernameWithClaims(ctx, username)
+	account, err := as.accountRepository.GetAccountByUsername(ctx, username)
 
 	if err != nil {
 		return err
@@ -91,16 +111,14 @@ func (as *AuthService) ResetPassword(ctx context.Context, username, oldPassword,
 	if account.HashedPassword != as.hash(oldPassword) {
 		return ErrorWrongPassword
 	}
-	account.HashedPassword = newPassword
 
-	err = as.accountRepository.UpdateAccountCredentials(ctx, account)
+	err = as.accountRepository.UpdateAccountPassword(ctx, username, newPassword)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 func (as *AuthService) DeleteAccountById(ctx context.Context, id uint64) error {
-
 	err := as.accountRepository.DeleteAccountById(ctx, id)
 	return err
 }

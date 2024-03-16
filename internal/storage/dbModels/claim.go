@@ -1,17 +1,17 @@
 package dbModels
 
-import "auth-service/internal/domain/entities"
+import "auth-service/internal/domain"
 
-type Claim struct {
-	Id    uint64 `db:"id"`
-	Title string `db:"title"`
-	Value string `db:"value"`
+type AccountClaim struct {
+	Id              uint64 `db:"id"`
+	AccountUsername string `db:"username"`
+	Title           string `db:"title"`
+	Value           string `db:"value"`
 }
 
-func (c Claim) MapToEntity() entities.Claim {
-	return entities.Claim{
-		Id:    c.Id,
-		Title: c.Title,
-		Value: c.Value,
+func (ac *AccountClaim) MapToEntity() domain.Claim {
+	return domain.Claim{
+		Title: ac.Title,
+		Value: ac.Value,
 	}
 }

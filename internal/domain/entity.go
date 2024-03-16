@@ -10,7 +10,6 @@ type Account struct {
 }
 
 type Claim struct {
-	Id    uint64
 	Title string
 	Value string
 }
