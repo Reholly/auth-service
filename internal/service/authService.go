@@ -2,17 +2,18 @@ package service
 
 import (
 	"auth-service/internal/config"
-	"auth-service/internal/domain/entities"
-	"auth-service/internal/domain/repositories"
+	"auth-service/internal/domain"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/golang-jwt/jwt/v4"
-	"time"
+	"fmt"
+	"net/url"
 )
 
 type AuthService struct {
-	accountRepository repositories.AccountRepositoryContract
+	accountRepository domain.AccountRepository
+	tokenService      domain.TokenService
+	mailService       domain.MailService
 	config            config.Config
 }
 
@@ -23,10 +24,15 @@ func (as *AuthService) LogIn(ctx context.Context, username, password string) (st
 		return "", err
 	}
 
-	if account.HashedPassword != as.hashPassword(password) {
+	if account.HashedPassword != as.hash(password) {
 		return "", ErrorWrongPassword
 	}
-	token, err := as.createToken(username, account.Claims)
+	account.Claims = append(account.Claims, domain.Claim{
+		Title: "username",
+		Value: account.Username,
+	})
+
+	token, err := as.tokenService.CreateToken(account.Claims)
 
 	if err != nil {
 		return "", err
@@ -34,34 +40,73 @@ func (as *AuthService) LogIn(ctx context.Context, username, password string) (st
 
 	return token, nil
 }
-func (as *AuthService) RegisterAccount(account entities.Account) (entities.Account, error) {
 
-}
-func (as *AuthService) ResetPassword(username, password string) error {
-
-}
-func (as *AuthService) DeleteAccountById(id uint64) error {
-
-}
-
-func (as *AuthService) createToken(username string, claims []entities.Claim) (string, error) {
-	payload := jwt.MapClaims{}
-	payload["username"] = username
-	payload["exp"] = time.Now().Add(time.Hour * time.Duration(as.config.TokenTimeToLiveInHours)).Unix()
-	for _, claim := range claims {
-		payload[claim.Title] = claim.Value
-	}
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, payload).SignedString(as.config.JwtSecret)
+func (as *AuthService) RegisterAccount(ctx context.Context, account domain.Account) error {
+	ok, err := as.accountRepository.CheckIfExistsAccountWithCredentials(ctx, account.Username, account.Email)
 
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return token, err
+	if !ok {
+		return ErrorAccountAlreadyExists
+	}
+
+	err = as.accountRepository.CreateAccount(ctx, account)
+	if err != nil {
+		return err
+	}
+	confirmationCode := as.hash(account.Username)
+
+	params := url.Values{}
+	params.Set("username", account.Username)
+	params.Set("code", confirmationCode)
+	confirmationUrl := fmt.Sprintf("%s?%s", as.config.EmailConfirmationUrlBase, params.Encode())
+	confirmationMessage := fmt.Sprintf("Для подтверждения почты перейдите по ссылке: <a href='%s'>ссылке.</a>", confirmationUrl)
+	err = as.mailService.SendMail(ctx, "Подтверждение почты", confirmationMessage)
+
+	if err != nil {
+		return err
+	}
+
+	as.accountRepository.CreateAccount(ctx, account)
+
+	return nil
 }
 
-func (as *AuthService) hashPassword(password string) string {
+func (as *AuthService) ConfirmEmail(ctx context.Context, code, username string) error {
+	if as.hash(username) != code {
+		return ErrorWrongEmailConfirmation
+	}
+	return as.accountRepository.ConfirmAccountEmail(ctx, username)
+}
+
+func (as *AuthService) ResetPassword(ctx context.Context, username, oldPassword, newPassword string) error {
+	account, err := as.accountRepository.GetByUsernameWithClaims(ctx, username)
+
+	if err != nil {
+		return err
+	}
+
+	if account.HashedPassword != as.hash(oldPassword) {
+		return ErrorWrongPassword
+	}
+	account.HashedPassword = newPassword
+
+	err = as.accountRepository.UpdateAccountCredentials(ctx, account)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (as *AuthService) DeleteAccountById(ctx context.Context, id uint64) error {
+
+	err := as.accountRepository.DeleteAccountById(ctx, id)
+	return err
+}
+
+func (as *AuthService) hash(item string) string {
 	encoder := sha256.New()
-	encoder.Write([]byte(password + as.config.Salt))
+	encoder.Write([]byte(item + as.config.Salt))
 	return hex.EncodeToString(encoder.Sum(nil))
 }

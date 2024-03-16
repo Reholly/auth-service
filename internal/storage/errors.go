@@ -3,6 +3,6 @@ package storage
 import "errors"
 
 var (
-	NotFoundErr      = errors.New("not found")
-	AlreadyExistsErr = errors.New("item already exists")
+	ErrorNotFound      = errors.New("[Database] Not found")
+	ErrorAlreadyExists = errors.New("[Database] Item already exists")
 )

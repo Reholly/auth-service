@@ -1,7 +1,7 @@
 package infrastructure
 
 import (
-	"auth-service/internal/domain/entities"
+	"auth-service/internal/domain"
 	"github.com/golang-jwt/jwt/v4"
 	"time"
 )
@@ -18,7 +18,7 @@ func NewJwtManager(jwtSecret string, expirationTimeInHours int) *JwtManager {
 	}
 }
 
-func (j *JwtManager) CreateToken(claims []entities.Claim) (string, error) {
+func (j *JwtManager) CreateToken(claims []domain.Claim) (string, error) {
 	payload := jwt.MapClaims{}
 	payload["exp"] = time.Now().Add(time.Hour * time.Duration(j.expirationTimeInHours)).Unix()
 	for _, claim := range claims {
@@ -33,7 +33,7 @@ func (j *JwtManager) CreateToken(claims []entities.Claim) (string, error) {
 	return token, err
 }
 
-func (j *JwtManager) ParseClaims(jwtToken string) ([]entities.Claim, error) {
+func (j *JwtManager) ParseClaims(jwtToken string) ([]domain.Claim, error) {
 	token, err := jwt.Parse(jwtToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte{}, nil
 	})
@@ -46,9 +46,9 @@ func (j *JwtManager) ParseClaims(jwtToken string) ([]entities.Claim, error) {
 	if !ok {
 		return nil, ErrorInvalidToken
 	}
-	entitiesClaims := make([]entities.Claim, len(claims))
+	entitiesClaims := make([]domain.Claim, len(claims))
 	for title, value := range claims {
-		entitiesClaims = append(entitiesClaims, entities.Claim{
+		entitiesClaims = append(entitiesClaims, domain.Claim{
 			Title: title,
 			Value: value.(string),
 		})
