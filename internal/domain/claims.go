@@ -2,15 +2,15 @@ package domain
 
 var (
 	AdminRole = Claim{
-		Title: "Role",
-		Value: "Admin",
+		Title: "role",
+		Value: "admin",
 	}
 	StudentRole = Claim{
-		Title: "Role",
-		Value: "Student",
+		Title: "role",
+		Value: "student",
 	}
 	ModeratorRole = Claim{
-		Title: "Role",
-		Value: "Moderator",
+		Title: "role",
+		Value: "moderator",
 	}
 )

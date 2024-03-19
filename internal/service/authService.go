@@ -3,6 +3,7 @@ package service
 import (
 	"auth-service/internal/config"
 	"auth-service/internal/domain"
+	"auth-service/internal/storage/repositories"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -11,15 +12,27 @@ import (
 )
 
 type AuthService struct {
-	accountRepository      domain.AccountRepository
-	accountClaimRepository domain.AccountClaimRepository
-	tokenService           domain.TokenService
-	mailService            domain.MailService
-	config                 config.Config
+	repository   *repositories.RepositoryManager
+	mailService  domain.MailService
+	tokenService domain.TokenService
+	config       config.Config
+}
+
+func NewAuthService(
+	config config.Config,
+	repository *repositories.RepositoryManager,
+	mailService domain.MailService,
+	tokenService domain.TokenService) domain.AuthService {
+	return &AuthService{
+		repository:   repository,
+		mailService:  mailService,
+		tokenService: tokenService,
+		config:       config,
+	}
 }
 
 func (as *AuthService) LogIn(ctx context.Context, username, password string) (string, error) {
-	dbAccount, err := as.accountRepository.GetAccountByUsername(ctx, username)
+	dbAccount, err := as.repository.GetAccountByUsername(ctx, username)
 
 	if err != nil {
 		return "", err
@@ -29,7 +42,7 @@ func (as *AuthService) LogIn(ctx context.Context, username, password string) (st
 		return "", ErrorWrongPassword
 	}
 
-	claims, err := as.accountClaimRepository.GetClaimsByUsername(ctx, username)
+	claims, err := as.repository.GetClaimsByUsername(ctx, username)
 	claims = append(claims, domain.Claim{
 		Title: "username",
 		Value: username,
@@ -49,7 +62,7 @@ func (as *AuthService) LogIn(ctx context.Context, username, password string) (st
 }
 
 func (as *AuthService) RegisterAccount(ctx context.Context, username, email, password string) error {
-	ok, err := as.accountRepository.CheckIfExistsAccountWithCredentials(ctx, username, email)
+	ok, err := as.repository.CheckIfExistsAccountWithCredentials(ctx, username, email)
 
 	if err != nil {
 		return err
@@ -59,13 +72,13 @@ func (as *AuthService) RegisterAccount(ctx context.Context, username, email, pas
 		return ErrorAccountAlreadyExists
 	}
 
-	err = as.accountRepository.CreateAccount(ctx, username, email, as.hash(password))
+	err = as.repository.CreateAccount(ctx, username, email, as.hash(password))
 
 	if err != nil {
 		return err
 	}
 
-	err = as.accountClaimRepository.AddClaimByUsername(ctx, username, domain.StudentRole)
+	err = as.repository.AddClaimByUsername(ctx, username, domain.StudentRole)
 	if err != nil {
 		return err
 	}
@@ -80,13 +93,13 @@ func (as *AuthService) RegisterAccount(ctx context.Context, username, email, pas
 	params.Set("code", confirmationCode)
 	confirmationUrl := fmt.Sprintf("%s?%s", as.config.EmailConfirmationUrlBase, params.Encode())
 	confirmationMessage := fmt.Sprintf("Для подтверждения почты перейдите по ссылке: <a href='%s'>ссылке.</a>", confirmationUrl)
-	err = as.mailService.SendMail(ctx, "Подтверждение почты", confirmationMessage)
+	err = as.mailService.SendMail(ctx, email, "Подтверждение почты", confirmationMessage)
 
 	if err != nil {
 		return err
 	}
 
-	err = as.accountRepository.CreateAccount(ctx, username, email, password)
+	err = as.repository.CreateAccount(ctx, username, email, password)
 	if err != nil {
 		return err
 	}
@@ -98,11 +111,11 @@ func (as *AuthService) ConfirmEmail(ctx context.Context, code, username string) 
 	if as.hash(username) != code {
 		return ErrorWrongEmailConfirmation
 	}
-	return as.accountRepository.ConfirmAccountEmail(ctx, username)
+	return as.repository.ConfirmAccountEmail(ctx, username)
 }
 
 func (as *AuthService) ResetPassword(ctx context.Context, username, oldPassword, newPassword string) error {
-	account, err := as.accountRepository.GetAccountByUsername(ctx, username)
+	account, err := as.repository.GetAccountByUsername(ctx, username)
 
 	if err != nil {
 		return err
@@ -112,14 +125,14 @@ func (as *AuthService) ResetPassword(ctx context.Context, username, oldPassword,
 		return ErrorWrongPassword
 	}
 
-	err = as.accountRepository.UpdateAccountPassword(ctx, username, newPassword)
+	err = as.repository.UpdateAccountPassword(ctx, username, newPassword)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 func (as *AuthService) DeleteAccountById(ctx context.Context, id uint64) error {
-	err := as.accountRepository.DeleteAccountById(ctx, id)
+	err := as.repository.DeleteAccountById(ctx, id)
 	return err
 }
 

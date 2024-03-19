@@ -3,16 +3,16 @@ package repositories
 import (
 	"auth-service/internal/domain"
 	"auth-service/internal/storage/dbModels"
+	"auth-service/lib/db"
 	"context"
-	"github.com/jackc/pgx/v5"
 )
 
 type AccountClaimRepository struct {
-	db *pgx.Conn
+	db db.PostgresAdapter
 }
 
-func NewClaimRepository(conn *pgx.Conn) AccountClaimRepository {
-	return AccountClaimRepository{db: conn}
+func NewClaimRepository(conn db.PostgresAdapter) domain.AccountClaimRepository {
+	return &AccountClaimRepository{db: conn}
 }
 
 func (r *AccountClaimRepository) GetClaimsByUsername(ctx context.Context, username string) ([]domain.Claim, error) {
@@ -20,13 +20,8 @@ func (r *AccountClaimRepository) GetClaimsByUsername(ctx context.Context, userna
 				from account_claim as ac 
 				where ac.username = $1`
 
-	rows, err := r.db.Query(ctx, sql, username)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	dbClaims, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[dbModels.AccountClaim])
+	var dbClaims []dbModels.AccountClaim
+	err := r.db.Query(ctx, &dbClaims, sql, username)
 
 	if err != nil {
 		return nil, err
@@ -46,7 +41,10 @@ func (r *AccountClaimRepository) GetClaimsByUsername(ctx context.Context, userna
 func (r *AccountClaimRepository) AddClaimByUsername(ctx context.Context, username string, claim domain.Claim) error {
 	sql := `insert into account_claim(username, claim_title, claim_value) values ($1, $2, $3)`
 
-	_, err := r.db.Exec(ctx, sql, username, claim.Title, claim.Value)
+	return r.db.Execute(ctx, sql, username, claim.Title, claim.Value)
+}
+func (r *AccountClaimRepository) RemoveClaimByUsername(ctx context.Context, username string, claim domain.Claim) error {
+	sql := `delete from account_claim where username = $1 and claim_title= $2 and claim_value = $3`
 
-	return err
+	return r.db.Execute(ctx, sql, username, claim.Title, claim.Value)
 }

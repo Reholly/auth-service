@@ -40,19 +40,6 @@ func (h *AuthHandler) LogIn(c *gin.Context) {
 	c.JSON(http.StatusOK, token)
 }
 
-func (h *AuthHandler) ResetPassword(c *gin.Context) {
-	username := c.Param("username")
-	oldPassword := c.Param("oldPassword")
-	newPassword := c.Param("newPassword")
-	err := h.authService.ResetPassword(c.Request.Context(), username, oldPassword, newPassword)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, "Невозможно поменять пароль. Возможно, неправильно указан предыдущий пароль или же юзернейм.")
-		return
-	}
-
-	c.JSON(http.StatusOK, "ok")
-}
-
 func (h *AuthHandler) ConfirmEmail(c *gin.Context) {
 	code := c.Param("code")
 	username := c.Param("username")
@@ -60,6 +47,34 @@ func (h *AuthHandler) ConfirmEmail(c *gin.Context) {
 	err := h.authService.ConfirmEmail(c.Request.Context(), code, username)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, "Wrong code or username")
+		return
+	}
+
+	c.JSON(http.StatusOK, "ok")
+}
+func (h *AuthHandler) CreateModerator(c *gin.Context) {
+
+}
+
+func (h *AuthHandler) DeleteModerator(c *gin.Context) {
+
+}
+
+func (h *AuthHandler) BanUser(c *gin.Context) {
+
+}
+
+func (h *AuthHandler) UnbanUser(c *gin.Context) {
+
+}
+
+func (h *AuthHandler) ResetPassword(c *gin.Context) {
+	username := c.Param("username")
+	oldPassword := c.Param("oldPassword")
+	newPassword := c.Param("newPassword")
+	err := h.authService.ResetPassword(c.Request.Context(), username, oldPassword, newPassword)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "Невозможно поменять пароль. Возможно, неправильно указан предыдущий пароль или же юзернейм.")
 		return
 	}
 

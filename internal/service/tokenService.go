@@ -1,24 +1,26 @@
-package infrastructure
+package service
 
 import (
+	"auth-service/internal/config"
 	"auth-service/internal/domain"
+	"auth-service/internal/infrastructure"
 	"github.com/golang-jwt/jwt/v4"
 	"time"
 )
 
-type JwtManager struct {
+type TokenService struct {
 	jwtSecret             string
 	expirationTimeInHours int
 }
 
-func NewJwtManager(jwtSecret string, expirationTimeInHours int) *JwtManager {
-	return &JwtManager{
-		jwtSecret:             jwtSecret,
-		expirationTimeInHours: expirationTimeInHours,
+func NewTokenService(config config.Config) domain.TokenService {
+	return &TokenService{
+		jwtSecret:             config.JwtSecret,
+		expirationTimeInHours: config.TokenTimeToLiveInHours,
 	}
 }
 
-func (j *JwtManager) CreateToken(claims []domain.Claim) (string, error) {
+func (j *TokenService) CreateToken(claims []domain.Claim) (string, error) {
 	payload := jwt.MapClaims{}
 	payload["exp"] = time.Now().Add(time.Hour * time.Duration(j.expirationTimeInHours)).Unix()
 	for _, claim := range claims {
@@ -33,7 +35,7 @@ func (j *JwtManager) CreateToken(claims []domain.Claim) (string, error) {
 	return token, err
 }
 
-func (j *JwtManager) ParseClaims(jwtToken string) ([]domain.Claim, error) {
+func (j *TokenService) ParseClaims(jwtToken string) ([]domain.Claim, error) {
 	token, err := jwt.Parse(jwtToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte{}, nil
 	})
@@ -44,7 +46,7 @@ func (j *JwtManager) ParseClaims(jwtToken string) ([]domain.Claim, error) {
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return nil, ErrorInvalidToken
+		return nil, infrastructure.ErrorInvalidToken
 	}
 	entitiesClaims := make([]domain.Claim, len(claims))
 	for title, value := range claims {

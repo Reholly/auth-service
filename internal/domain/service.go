@@ -10,11 +10,25 @@ type AuthService interface {
 	DeleteAccountById(ctx context.Context, id uint64) error
 }
 
+type AdminService interface {
+	BanUser(ctx context.Context, username, reason string) error
+	UnbanUser(ctx context.Context, username string) error
+	CreateModerator(ctx context.Context, username string) error
+	DeleteModerator(ctx context.Context, username string) error
+}
+
 type MailService interface {
-	SendMail(ctx context.Context, header, message string) error
+	SendMail(ctx context.Context, address, header, message string) error
 }
 
 type TokenService interface {
 	CreateToken(claims []Claim) (string, error)
 	ParseClaims(jwtToken string) ([]Claim, error)
+}
+
+type ServiceManager struct {
+	TokenService
+	AuthService
+	MailService
+	AdminService
 }
