@@ -4,6 +4,8 @@ import (
 	"auth-service/internal/config"
 	"auth-service/internal/server/handler"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
 )
 
@@ -11,13 +13,13 @@ type Router struct {
 	address string
 }
 
-func NewRouter(config config.Config) *Router {
+func NewRouter(config *config.Config) *Router {
 	return &Router{
 		address: config.Address,
 	}
 }
 
-func (r *Router) Run(authHandler handler.AuthHandler) {
+func (r *Router) Run(authHandler *handler.AuthHandler) error {
 	/*	go func() {
 			_ = r.gin.Run(r.address)
 		}()
@@ -27,6 +29,8 @@ func (r *Router) Run(authHandler handler.AuthHandler) {
 		<-quit*/
 
 	g := gin.New()
+
+	g.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	group := g.Group("/api")
 
@@ -42,4 +46,5 @@ func (r *Router) Run(authHandler handler.AuthHandler) {
 		c.Status(http.StatusOK)
 	})
 
+	return g.Run(r.address)
 }

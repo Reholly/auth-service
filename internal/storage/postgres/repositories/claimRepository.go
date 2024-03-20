@@ -2,16 +2,17 @@ package repositories
 
 import (
 	"auth-service/internal/domain"
-	"auth-service/internal/storage/dbModels"
+	"auth-service/internal/storage/postgres/interfaces"
+	"auth-service/internal/storage/postgres/models"
 	"auth-service/lib/db"
 	"context"
 )
 
 type AccountClaimRepository struct {
-	db db.PostgresAdapter
+	db *db.PostgresAdapter
 }
 
-func NewClaimRepository(conn db.PostgresAdapter) domain.AccountClaimRepository {
+func NewClaimRepository(conn *db.PostgresAdapter) interfaces.ClaimRepository {
 	return &AccountClaimRepository{db: conn}
 }
 
@@ -20,7 +21,7 @@ func (r *AccountClaimRepository) GetClaimsByUsername(ctx context.Context, userna
 				from account_claim as ac 
 				where ac.username = $1`
 
-	var dbClaims []dbModels.AccountClaim
+	var dbClaims []models.AccountClaim
 	err := r.db.Query(ctx, &dbClaims, sql, username)
 
 	if err != nil {

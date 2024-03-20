@@ -3,16 +3,16 @@ package repositories
 import (
 	"auth-service/internal/domain"
 	"auth-service/internal/storage"
-	"auth-service/internal/storage/dbModels"
+	"auth-service/internal/storage/postgres/models"
 	"auth-service/lib/db"
 	"context"
 )
 
 type AccountRepository struct {
-	db db.PostgresAdapter
+	db *db.PostgresAdapter
 }
 
-func NewAccountRepository(db db.PostgresAdapter) *AccountRepository {
+func NewAccountRepository(db *db.PostgresAdapter) *AccountRepository {
 	return &AccountRepository{db: db}
 }
 func (r *AccountRepository) GetAccountByUsername(ctx context.Context, username string) (domain.Account, error) {
@@ -20,7 +20,7 @@ func (r *AccountRepository) GetAccountByUsername(ctx context.Context, username s
 				from account u 
 				where u.username = $1`
 
-	var accounts []dbModels.Account
+	var accounts []models.Account
 	err := r.db.Query(ctx, &accounts, sql, username)
 
 	if len(accounts) == 0 {
@@ -36,7 +36,7 @@ func (r *AccountRepository) CheckIfExistsAccountWithCredentials(ctx context.Cont
 				where u.username = $1
 				  and u.email = $2`
 
-	var accounts []dbModels.Account
+	var accounts []models.Account
 	err := r.db.Query(ctx, &accounts, sql, username, email)
 
 	if len(accounts) > 0 {

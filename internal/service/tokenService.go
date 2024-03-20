@@ -3,7 +3,6 @@ package service
 import (
 	"auth-service/internal/config"
 	"auth-service/internal/domain"
-	"auth-service/internal/infrastructure"
 	"github.com/golang-jwt/jwt/v4"
 	"time"
 )
@@ -13,7 +12,7 @@ type TokenService struct {
 	expirationTimeInHours int
 }
 
-func NewTokenService(config config.Config) domain.TokenService {
+func NewTokenService(config *config.Config) domain.TokenService {
 	return &TokenService{
 		jwtSecret:             config.JwtSecret,
 		expirationTimeInHours: config.TokenTimeToLiveInHours,
@@ -46,7 +45,7 @@ func (j *TokenService) ParseClaims(jwtToken string) ([]domain.Claim, error) {
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return nil, infrastructure.ErrorInvalidToken
+		return nil, ErrorInvalidToken
 	}
 	entitiesClaims := make([]domain.Claim, len(claims))
 	for title, value := range claims {
@@ -55,5 +54,6 @@ func (j *TokenService) ParseClaims(jwtToken string) ([]domain.Claim, error) {
 			Value: value.(string),
 		})
 	}
+
 	return entitiesClaims, nil
 }

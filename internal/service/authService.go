@@ -3,7 +3,7 @@ package service
 import (
 	"auth-service/internal/config"
 	"auth-service/internal/domain"
-	"auth-service/internal/storage/repositories"
+	"auth-service/internal/storage/postgres/repositories"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -15,11 +15,11 @@ type AuthService struct {
 	repository   *repositories.RepositoryManager
 	mailService  domain.MailService
 	tokenService domain.TokenService
-	config       config.Config
+	config       *config.Config
 }
 
 func NewAuthService(
-	config config.Config,
+	config *config.Config,
 	repository *repositories.RepositoryManager,
 	mailService domain.MailService,
 	tokenService domain.TokenService) domain.AuthService {

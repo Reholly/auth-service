@@ -10,7 +10,7 @@ const (
 )
 
 type Config struct {
-	ConnectionString       string `yaml:"connectionString"`
+	ConnectionString       string `yaml:"connection_string"`
 	Address                string `yaml:"address"`
 	JwtSecret              string `yaml:"jwt_secret"`
 	TokenTimeToLiveInHours int    `yaml:"token_time_to_live_in_hours"`

@@ -2,7 +2,7 @@ package service
 
 import (
 	"auth-service/internal/domain"
-	"auth-service/internal/storage/repositories"
+	"auth-service/internal/storage/postgres/repositories"
 	"context"
 )
 

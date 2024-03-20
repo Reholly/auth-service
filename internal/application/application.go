@@ -2,14 +2,21 @@ package application
 
 import (
 	"auth-service/internal/config"
+	"auth-service/internal/server/handler"
+	"auth-service/internal/server/router"
 	"auth-service/internal/service"
-	"auth-service/internal/storage/repositories"
+	repositories2 "auth-service/internal/storage/postgres/repositories"
 	"auth-service/lib/db"
 	"context"
+	"fmt"
 )
 
 type Application struct {
-	config config.Config
+	config *config.Config
+}
+
+func NewApplication(config *config.Config) *Application {
+	return &Application{config: config}
 }
 
 func (a *Application) Run() {
@@ -22,10 +29,10 @@ func (a *Application) Run() {
 		panic(err)
 	}
 
-	accountRepository := repositories.NewAccountRepository(*postgresAdapter)
-	claimRepository := repositories.NewClaimRepository(*postgresAdapter)
+	accountRepository := repositories2.NewAccountRepository(postgresAdapter)
+	claimRepository := repositories2.NewClaimRepository(postgresAdapter)
 
-	repositoryManager := repositories.NewRepositoryManager(accountRepository, claimRepository)
+	repositoryManager := repositories2.NewRepositoryManager(accountRepository, claimRepository)
 
 	adminService := service.NewAdminService(repositoryManager)
 	mailService := service.NewMailService(a.config)
@@ -33,4 +40,8 @@ func (a *Application) Run() {
 	authService := service.NewAuthService(a.config, repositoryManager, mailService, tokenService)
 
 	serviceManager := service.NewServiceManager(mailService, adminService, authService, tokenService)
+	fmt.Println(serviceManager)
+	router := router.NewRouter(a.config)
+	authHandler := handler.NewAuthHandler(serviceManager, repositoryManager)
+	router.Run(authHandler)
 }

@@ -9,10 +9,10 @@ import (
 )
 
 type MailService struct {
-	config config.Config
+	config *config.Config
 }
 
-func NewMailService(config config.Config) domain.MailService {
+func NewMailService(config *config.Config) domain.MailService {
 	return &MailService{config: config}
 }
 
