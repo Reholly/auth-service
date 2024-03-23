@@ -62,13 +62,13 @@ func (as *AuthService) LogIn(ctx context.Context, username, password string) (st
 }
 
 func (as *AuthService) RegisterAccount(ctx context.Context, username, email, password string) error {
-	ok, err := as.repository.CheckIfExistsAccountWithCredentials(ctx, username, email)
+	exist, err := as.repository.CheckIfExistsAccountWithCredentials(ctx, username, email)
 
 	if err != nil {
 		return err
 	}
 
-	if !ok {
+	if exist {
 		return ErrorAccountAlreadyExists
 	}
 
@@ -92,14 +92,9 @@ func (as *AuthService) RegisterAccount(ctx context.Context, username, email, pas
 	params.Set("username", username)
 	params.Set("code", confirmationCode)
 	confirmationUrl := fmt.Sprintf("%s?%s", as.config.EmailConfirmationUrlBase, params.Encode())
-	confirmationMessage := fmt.Sprintf("Для подтверждения почты перейдите по ссылке: <a href='%s'>ссылке.</a>", confirmationUrl)
+	confirmationMessage := fmt.Sprintf("Для подтверждения почты перейдите по: <a href=\"%s\">ссылке.</a>", confirmationUrl)
 	err = as.mailService.SendMail(ctx, email, "Подтверждение почты", confirmationMessage)
 
-	if err != nil {
-		return err
-	}
-
-	err = as.repository.CreateAccount(ctx, username, email, password)
 	if err != nil {
 		return err
 	}

@@ -29,7 +29,7 @@ func (pa *PostgresAdapter) Close() error {
 	return pa.connection.Close()
 }
 
-func (pa *PostgresAdapter) Execute(requestCtx context.Context, sql string, args ...any) error {
+func (pa *PostgresAdapter) Execute(requestCtx context.Context, sql string, args ...interface{}) error {
 	if pa.connection == nil {
 		return errors.New("[ PostgresAdapter ] Execute: connection is nil")
 	}
@@ -37,11 +37,11 @@ func (pa *PostgresAdapter) Execute(requestCtx context.Context, sql string, args 
 	ctx, cancel := context.WithTimeout(requestCtx, TimeoutDbContext)
 	defer cancel()
 
-	_, err := pa.connection.NamedExecContext(ctx, sql, args)
+	_, err := pa.connection.ExecContext(ctx, sql, args...)
 	return err
 }
 
-func (pa *PostgresAdapter) ExecuteAndGet(requestCtx context.Context, destination any, sql string, args ...any) error {
+func (pa *PostgresAdapter) ExecuteAndGet(requestCtx context.Context, destination interface{}, sql string, args ...interface{}) error {
 	if pa.connection == nil {
 		return errors.New("[ PostgresAdapter ] ExecuteAndGet: connection is nil")
 	}
@@ -49,10 +49,10 @@ func (pa *PostgresAdapter) ExecuteAndGet(requestCtx context.Context, destination
 	ctx, cancel := context.WithTimeout(requestCtx, TimeoutDbContext)
 	defer cancel()
 
-	return pa.connection.GetContext(ctx, destination, sql, args)
+	return pa.connection.GetContext(ctx, destination, sql, args...)
 }
 
-func (pa *PostgresAdapter) Query(requestCtx context.Context, destination any, query string, args ...any) error {
+func (pa *PostgresAdapter) Query(requestCtx context.Context, destination interface{}, query string, args ...interface{}) error {
 	if pa.connection == nil {
 		return errors.New("[ PostgresAdapter ] Query: connection is nil")
 	}
@@ -60,5 +60,5 @@ func (pa *PostgresAdapter) Query(requestCtx context.Context, destination any, qu
 	ctx, cancel := context.WithTimeout(requestCtx, TimeoutDbContext)
 	defer cancel()
 
-	return pa.connection.SelectContext(ctx, destination, query, args)
+	return pa.connection.SelectContext(ctx, destination, query, args...)
 }

@@ -5,8 +5,8 @@ import "auth-service/internal/domain"
 type AccountClaim struct {
 	Id              uint64 `db:"id"`
 	AccountUsername string `db:"username"`
-	Title           string `db:"title"`
-	Value           string `db:"value"`
+	Title           string `db:"claim_title"`
+	Value           string `db:"claim_value"`
 }
 
 func (ac *AccountClaim) MapToEntity() domain.Claim {

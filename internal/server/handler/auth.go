@@ -20,16 +20,14 @@ func NewAuthHandler(service *service.ServiceManager, repository *repositories.Re
 	}
 }
 
-// @BasePath /api/v1
-
 // Register endpoint godoc
 // @Summary Endpoint for account registration.
-// @Schemes
 // @Description Account registration
-// @Tags example
 // @Accept json
 // @Produce json
+// @Param input body dto.AccountWithPasswordDto true "Register"
 // @Success 200 {string} ok
+// @Failure 400 {string} bad request
 // @Router /api/auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var accountDto dto.AccountWithPasswordDto
@@ -45,10 +43,22 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	c.JSON(http.StatusOK, "ok")
 }
 
+// LogIn endpoint godoc
+// @Summary Endpoint for getting access to system.
+// @Description Log In
+// @Accept json
+// @Produce json
+// @Param input body dto.LogInDto true "Register"
+// @Success 200 {string} ok
+// @Failure 400 {string} bad request
+// @Router /api/auth/login [post]
 func (h *AuthHandler) LogIn(c *gin.Context) {
-	username := c.Param("username")
-	password := c.Param("password")
-	token, err := h.service.LogIn(c.Request.Context(), username, password)
+	var loginDto dto.LogInDto
+	if err := c.ShouldBindJSON(&loginDto); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, err)
+	}
+
+	token, err := h.service.LogIn(c.Request.Context(), loginDto.Username, loginDto.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, "Невозможно войти. неправильный пароль или юзернейм.")
 		return
@@ -56,9 +66,18 @@ func (h *AuthHandler) LogIn(c *gin.Context) {
 	c.JSON(http.StatusOK, token)
 }
 
+// ConfirmEmail endpoint godoc
+// @Summary Endpoint for email confirmation after registration.
+// @Description Confirm email
+// @Accept json
+// @Produce json
+// @Param input query dto.EmailConfirmDto true "Confirm"
+// @Success 200 {string} ok
+// @Failure 400 {string} bad request
+// @Router /api/auth/confirm [get]
 func (h *AuthHandler) ConfirmEmail(c *gin.Context) {
-	code := c.Param("code")
-	username := c.Param("username")
+	code := c.Query("code")
+	username := c.Query("username")
 
 	err := h.service.ConfirmEmail(c.Request.Context(), code, username)
 	if err != nil {

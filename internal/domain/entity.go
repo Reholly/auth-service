@@ -5,6 +5,7 @@ type Account struct {
 	Username         string
 	Email            string
 	IsEmailConfirmed bool
+	IsBanned         bool
 	HashedPassword   string
 	Claims           []Claim
 }

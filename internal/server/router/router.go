@@ -36,9 +36,9 @@ func (r *Router) Run(authHandler *handler.AuthHandler) error {
 
 	auth := group.Group("/auth")
 	{
-		auth.GET("/login", authHandler.LogIn)
+		auth.POST("/login", authHandler.LogIn)
 		auth.POST("/register", authHandler.Register)
-		auth.GET("/reset", authHandler.ResetPassword)
+		auth.POST("/reset", authHandler.ResetPassword)
 		auth.GET("/confirm", authHandler.ConfirmEmail)
 	}
 

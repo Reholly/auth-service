@@ -34,8 +34,8 @@ func (a *Application) Run() {
 
 	repositoryManager := repositories2.NewRepositoryManager(accountRepository, claimRepository)
 
-	adminService := service.NewAdminService(repositoryManager)
 	mailService := service.NewMailService(a.config)
+	adminService := service.NewAdminService(repositoryManager, mailService)
 	tokenService := service.NewTokenService(a.config)
 	authService := service.NewAuthService(a.config, repositoryManager, mailService, tokenService)
 

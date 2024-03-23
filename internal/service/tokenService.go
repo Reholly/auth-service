@@ -25,7 +25,7 @@ func (j *TokenService) CreateToken(claims []domain.Claim) (string, error) {
 	for _, claim := range claims {
 		payload[claim.Title] = claim.Value
 	}
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, payload).SignedString(j.jwtSecret)
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, payload).SignedString([]byte(j.jwtSecret))
 
 	if err != nil {
 		return "", err

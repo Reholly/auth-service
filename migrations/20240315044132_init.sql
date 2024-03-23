@@ -5,6 +5,7 @@ SELECT 'up SQL query';
 CREATE TABLE IF NOT EXISTS account (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     is_email_confirmed BOOLEAN NOT NULL,
+    is_banned BOOLEAN NOT NULL,
     username VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     hashed_password VARCHAR(255) NOT NULL
