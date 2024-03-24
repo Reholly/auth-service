@@ -1,17 +1,17 @@
-package domain
+package helpers
 
 import "auth-service/internal/domain/entity"
 
 var (
-	AdminRole = domain.Claim{
+	AdminRole = entity.Claim{
 		Title: "role",
 		Value: "admin",
 	}
-	StudentRole = domain.Claim{
+	StudentRole = entity.Claim{
 		Title: "role",
 		Value: "student",
 	}
-	ModeratorRole = domain.Claim{
+	ModeratorRole = entity.Claim{
 		Title: "role",
 		Value: "moderator",
 	}

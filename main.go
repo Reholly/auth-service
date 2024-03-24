@@ -1,9 +1,9 @@
 package main
 
 import (
+	"auth-service/config"
 	_ "auth-service/docs"
 	"auth-service/internal/application"
-	"auth-service/internal/config"
 )
 
 func main() {

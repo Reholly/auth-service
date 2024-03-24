@@ -1,19 +1,19 @@
-package implementations
+package implementation
 
 import (
-	"auth-service/internal/domain"
 	"auth-service/internal/domain/helpers"
-	"auth-service/internal/storage/postgres/repositories"
+	"auth-service/internal/domain/service"
+	"auth-service/internal/repository"
 	"context"
 	"github.com/pkg/errors"
 )
 
 type AdminService struct {
-	repository  *repositories.RepositoryManager
-	mailService domain.MailService
+	repository  *repository.RepositoryManager
+	mailService service.MailService
 }
 
-func NewAdminService(repository *repositories.RepositoryManager, mailService domain.MailService) domain.AdminService {
+func NewAdminService(repository *repository.RepositoryManager, mailService service.MailService) service.AdminService {
 	return &AdminService{
 		repository:  repository,
 		mailService: mailService,

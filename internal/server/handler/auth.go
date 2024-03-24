@@ -1,19 +1,19 @@
 package handler
 
 import (
+	"auth-service/internal/repository"
 	"auth-service/internal/server/dto"
 	"auth-service/internal/service"
-	"auth-service/internal/storage/postgres/repositories"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type AuthHandler struct {
 	service    *service.ServiceManager
-	repository *repositories.RepositoryManager
+	repository *repository.RepositoryManager
 }
 
-func NewAuthHandler(service *service.ServiceManager, repository *repositories.RepositoryManager) *AuthHandler {
+func NewAuthHandler(service *service.ServiceManager, repository *repository.RepositoryManager) *AuthHandler {
 	return &AuthHandler{
 		service:    service,
 		repository: repository,

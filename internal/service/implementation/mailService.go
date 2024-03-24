@@ -1,8 +1,8 @@
-package implementations
+package implementation
 
 import (
-	"auth-service/internal/config"
-	"auth-service/internal/domain"
+	"auth-service/config"
+	"auth-service/internal/domain/service"
 	"context"
 	"fmt"
 	"net/smtp"
@@ -12,7 +12,7 @@ type MailService struct {
 	config *config.Config
 }
 
-func NewMailService(config *config.Config) domain.MailService {
+func NewMailService(config *config.Config) service.MailService {
 	return &MailService{config: config}
 }
 

@@ -1,7 +1,7 @@
 package router
 
 import (
-	"auth-service/internal/config"
+	"auth-service/config"
 	"auth-service/internal/server/handler"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"

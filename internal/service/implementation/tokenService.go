@@ -1,10 +1,9 @@
-package implementations
+package implementation
 
 import (
-	"auth-service/internal/config"
-	"auth-service/internal/domain"
+	"auth-service/config"
 	"auth-service/internal/domain/entity"
-	"auth-service/internal/service"
+	service "auth-service/internal/domain/service"
 	"github.com/golang-jwt/jwt/v4"
 	"time"
 )
@@ -14,7 +13,7 @@ type TokenService struct {
 	expirationTimeInHours int
 }
 
-func NewTokenService(config *config.Config) domain.TokenService {
+func NewTokenService(config *config.Config) service.TokenService {
 	return &TokenService{
 		jwtSecret:             config.JwtSecret,
 		expirationTimeInHours: config.TokenTimeToLiveInHours,

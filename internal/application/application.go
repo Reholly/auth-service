@@ -1,12 +1,13 @@
 package application
 
 import (
-	"auth-service/internal/config"
+	"auth-service/config"
+	"auth-service/internal/repository"
+	repositories2 "auth-service/internal/repository/postgres/implementation"
 	"auth-service/internal/server/handler"
 	"auth-service/internal/server/router"
 	"auth-service/internal/service"
-	"auth-service/internal/service/implementations"
-	repositories2 "auth-service/internal/storage/postgres/repositories"
+	"auth-service/internal/service/implementation"
 	"auth-service/lib/db"
 	"context"
 	"fmt"
@@ -33,12 +34,12 @@ func (a *Application) Run() {
 	accountRepository := repositories2.NewAccountRepository(postgresAdapter)
 	claimRepository := repositories2.NewClaimRepository(postgresAdapter)
 
-	repositoryManager := repositories2.NewRepositoryManager(accountRepository, claimRepository)
+	repositoryManager := repository.NewRepositoryManager(accountRepository, claimRepository)
 
-	mailService := implementations.NewMailService(a.config)
-	adminService := implementations.NewAdminService(repositoryManager, mailService)
-	tokenService := implementations.NewTokenService(a.config)
-	authService := implementations.NewAuthService(a.config, repositoryManager, mailService, tokenService)
+	mailService := implementation.NewMailService(a.config)
+	adminService := implementation.NewAdminService(repositoryManager, mailService)
+	tokenService := implementation.NewTokenService(a.config)
+	authService := implementation.NewAuthService(a.config, repositoryManager, mailService, tokenService)
 
 	serviceManager := service.NewServiceManager(mailService, adminService, authService, tokenService)
 	fmt.Println(serviceManager)

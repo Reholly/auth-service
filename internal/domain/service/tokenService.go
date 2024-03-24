@@ -1,4 +1,4 @@
-package domain
+package service
 
 import domain "auth-service/internal/domain/entity"
 

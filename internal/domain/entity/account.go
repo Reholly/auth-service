@@ -1,4 +1,4 @@
-package domain
+package entity
 
 type Account struct {
 	Id               uint64

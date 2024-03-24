@@ -1,10 +1,10 @@
-package repositories
+package implementation
 
 import (
-	"auth-service/internal/domain"
-	"auth-service/internal/storage"
-	"auth-service/internal/storage/postgres/interfaces"
-	"auth-service/internal/storage/postgres/models"
+	"auth-service/internal/domain/entity"
+	"auth-service/internal/domain/repository"
+
+	"auth-service/internal/repository/models"
 	"auth-service/lib/db"
 	"context"
 )
@@ -13,10 +13,10 @@ type AccountRepository struct {
 	db *db.PostgresAdapter
 }
 
-func NewAccountRepository(db *db.PostgresAdapter) interfaces.AccountRepository {
+func NewAccountRepository(db *db.PostgresAdapter) repository.AccountRepository {
 	return &AccountRepository{db: db}
 }
-func (r *AccountRepository) GetAccountByUsername(ctx context.Context, username string) (domain.Account, error) {
+func (r *AccountRepository) GetAccountByUsername(ctx context.Context, username string) (entity.Account, error) {
 	sql := `select u.id, u.username, u.is_banned, u.email, u.hashed_password, u.is_email_confirmed
 				from account u 
 				where u.username = $1`
@@ -25,7 +25,7 @@ func (r *AccountRepository) GetAccountByUsername(ctx context.Context, username s
 	err := r.db.Query(ctx, &accounts, sql, username)
 
 	if len(accounts) == 0 {
-		return domain.Account{}, storage.ErrorNotFound
+		return entity.Account{}, repository.ErrorNotFound
 	}
 
 	return accounts[0].MapToEntity(), err
@@ -40,7 +40,7 @@ func (r *AccountRepository) CheckIfAccountBanned(ctx context.Context, username s
 	err := r.db.Query(ctx, &accounts, sql, username)
 
 	if len(accounts) == 0 {
-		return false, storage.ErrorNotFound
+		return false, repository.ErrorNotFound
 	}
 
 	return accounts[0].IsBanned, err
@@ -56,7 +56,7 @@ func (r *AccountRepository) CheckIfExistsAccountWithCredentials(ctx context.Cont
 	err := r.db.Query(ctx, &accounts, sql, username, email)
 
 	if len(accounts) > 0 {
-		return true, storage.ErrorAlreadyExists
+		return true, repository.ErrorAlreadyExists
 	}
 
 	return false, err

@@ -1,4 +1,4 @@
-package interfaces
+package repository
 
 import (
 	"auth-service/internal/domain/entity"

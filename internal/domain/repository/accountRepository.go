@@ -1,12 +1,12 @@
-package interfaces
+package repository
 
 import (
-	"auth-service/internal/domain"
+	"auth-service/internal/domain/entity"
 	"context"
 )
 
 type AccountRepository interface {
-	GetAccountByUsername(ctx context.Context, username string) (domain.Account, error)
+	GetAccountByUsername(ctx context.Context, username string) (entity.Account, error)
 	CheckIfAccountBanned(ctx context.Context, username string) (bool, error)
 	CheckIfExistsAccountWithCredentials(ctx context.Context, username, email string) (bool, error)
 	ConfirmAccountEmail(ctx context.Context, username string) error

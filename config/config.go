@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	configPath = "././configs/config.yaml"
+	configPath = "config.yaml"
 )
 
 type Config struct {

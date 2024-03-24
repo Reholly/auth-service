@@ -1,6 +1,8 @@
 package models
 
-import "auth-service/internal/domain"
+import (
+	"auth-service/internal/domain/entity"
+)
 
 type Account struct {
 	Id               uint64 `db:"id"`
@@ -11,8 +13,8 @@ type Account struct {
 	HashedPassword   string `db:"hashed_password"`
 }
 
-func (a *Account) MapToEntity() domain.Account {
-	return domain.Account{
+func (a *Account) MapToEntity() entity.Account {
+	return entity.Account{
 		Id:               a.Id,
 		Username:         a.Username,
 		Email:            a.Email,

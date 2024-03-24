@@ -1,9 +1,9 @@
-package repositories
+package implementation
 
 import (
 	"auth-service/internal/domain/entity"
-	"auth-service/internal/storage/postgres/interfaces"
-	"auth-service/internal/storage/postgres/models"
+	"auth-service/internal/domain/repository"
+	"auth-service/internal/repository/models"
 	"auth-service/lib/db"
 	"context"
 )
@@ -12,7 +12,7 @@ type AccountClaimRepository struct {
 	db *db.PostgresAdapter
 }
 
-func NewClaimRepository(conn *db.PostgresAdapter) interfaces.ClaimRepository {
+func NewClaimRepository(conn *db.PostgresAdapter) repository.ClaimRepository {
 	return &AccountClaimRepository{db: conn}
 }
 

@@ -1,19 +1,21 @@
 package service
 
-import "auth-service/internal/domain"
+import (
+	"auth-service/internal/domain/service"
+)
 
 type ServiceManager struct {
-	domain.MailService
-	domain.AdminService
-	domain.AuthService
-	domain.TokenService
+	service.MailService
+	service.AdminService
+	service.AuthService
+	service.TokenService
 }
 
 func NewServiceManager(
-	mailService domain.MailService,
-	adminService domain.AdminService,
-	authService domain.AuthService,
-	tokenService domain.TokenService) *ServiceManager {
+	mailService service.MailService,
+	adminService service.AdminService,
+	authService service.AuthService,
+	tokenService service.TokenService) *ServiceManager {
 	return &ServiceManager{
 		MailService:  mailService,
 		AdminService: adminService,
