@@ -5,6 +5,7 @@ import (
 	"auth-service/internal/server/handler"
 	"auth-service/internal/server/router"
 	"auth-service/internal/service"
+	"auth-service/internal/service/implementations"
 	repositories2 "auth-service/internal/storage/postgres/repositories"
 	"auth-service/lib/db"
 	"context"
@@ -34,10 +35,10 @@ func (a *Application) Run() {
 
 	repositoryManager := repositories2.NewRepositoryManager(accountRepository, claimRepository)
 
-	mailService := service.NewMailService(a.config)
-	adminService := service.NewAdminService(repositoryManager, mailService)
-	tokenService := service.NewTokenService(a.config)
-	authService := service.NewAuthService(a.config, repositoryManager, mailService, tokenService)
+	mailService := implementations.NewMailService(a.config)
+	adminService := implementations.NewAdminService(repositoryManager, mailService)
+	tokenService := implementations.NewTokenService(a.config)
+	authService := implementations.NewAuthService(a.config, repositoryManager, mailService, tokenService)
 
 	serviceManager := service.NewServiceManager(mailService, adminService, authService, tokenService)
 	fmt.Println(serviceManager)

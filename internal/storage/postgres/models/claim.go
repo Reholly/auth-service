@@ -1,6 +1,8 @@
 package models
 
-import "auth-service/internal/domain"
+import (
+	"auth-service/internal/domain/entity"
+)
 
 type AccountClaim struct {
 	Id              uint64 `db:"id"`
@@ -9,8 +11,8 @@ type AccountClaim struct {
 	Value           string `db:"claim_value"`
 }
 
-func (ac *AccountClaim) MapToEntity() domain.Claim {
-	return domain.Claim{
+func (ac *AccountClaim) MapToEntity() entity.Claim {
+	return entity.Claim{
 		Title: ac.Title,
 		Value: ac.Value,
 	}

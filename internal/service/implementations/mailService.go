@@ -1,4 +1,4 @@
-package service
+package implementations
 
 import (
 	"auth-service/internal/config"

@@ -1,7 +1,8 @@
-package service
+package implementations
 
 import (
 	"auth-service/internal/domain"
+	"auth-service/internal/domain/helpers"
 	"auth-service/internal/storage/postgres/repositories"
 	"context"
 	"github.com/pkg/errors"
@@ -53,13 +54,13 @@ func (s *AdminService) UnbanUser(ctx context.Context, username string) error {
 	return err
 }
 func (s *AdminService) CreateModerator(ctx context.Context, username string) error {
-	err := s.repository.ClaimRepository.AddClaimByUsername(ctx, username, domain.ModeratorRole)
+	err := s.repository.ClaimRepository.AddClaimByUsername(ctx, username, helpers.ModeratorRole)
 
 	return errors.Wrap(err, "[ AdminService] error creating moderator.")
 }
 
 func (s *AdminService) DeleteModerator(ctx context.Context, username string) error {
-	err := s.repository.ClaimRepository.RemoveClaimByUsername(ctx, username, domain.ModeratorRole)
+	err := s.repository.ClaimRepository.RemoveClaimByUsername(ctx, username, helpers.ModeratorRole)
 
 	return errors.Wrap(err, "[ AdminService] error deleting moderator.")
 }

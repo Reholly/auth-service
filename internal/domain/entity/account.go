@@ -9,8 +9,3 @@ type Account struct {
 	HashedPassword   string
 	Claims           []Claim
 }
-
-type Claim struct {
-	Title string
-	Value string
-}

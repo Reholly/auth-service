@@ -1,8 +1,11 @@
-package service
+package implementations
 
 import (
 	"auth-service/internal/config"
 	"auth-service/internal/domain"
+	"auth-service/internal/domain/entity"
+	"auth-service/internal/domain/helpers"
+	"auth-service/internal/service"
 	"auth-service/internal/storage/postgres/repositories"
 	"context"
 	"crypto/sha256"
@@ -39,11 +42,11 @@ func (as *AuthService) LogIn(ctx context.Context, username, password string) (st
 	}
 
 	if dbAccount.HashedPassword != as.hash(password) {
-		return "", ErrorWrongPassword
+		return "", service.ErrorWrongPassword
 	}
 
 	claims, err := as.repository.GetClaimsByUsername(ctx, username)
-	claims = append(claims, domain.Claim{
+	claims = append(claims, entity.Claim{
 		Title: "username",
 		Value: username,
 	})
@@ -69,7 +72,7 @@ func (as *AuthService) RegisterAccount(ctx context.Context, username, email, pas
 	}
 
 	if exist {
-		return ErrorAccountAlreadyExists
+		return service.ErrorAccountAlreadyExists
 	}
 
 	err = as.repository.CreateAccount(ctx, username, email, as.hash(password))
@@ -78,7 +81,7 @@ func (as *AuthService) RegisterAccount(ctx context.Context, username, email, pas
 		return err
 	}
 
-	err = as.repository.AddClaimByUsername(ctx, username, domain.StudentRole)
+	err = as.repository.AddClaimByUsername(ctx, username, helpers.StudentRole)
 	if err != nil {
 		return err
 	}
@@ -104,7 +107,7 @@ func (as *AuthService) RegisterAccount(ctx context.Context, username, email, pas
 
 func (as *AuthService) ConfirmEmail(ctx context.Context, code, username string) error {
 	if as.hash(username) != code {
-		return ErrorWrongEmailConfirmation
+		return service.ErrorWrongEmailConfirmation
 	}
 	return as.repository.ConfirmAccountEmail(ctx, username)
 }
@@ -117,7 +120,7 @@ func (as *AuthService) ResetPassword(ctx context.Context, username, oldPassword,
 	}
 
 	if account.HashedPassword != as.hash(oldPassword) {
-		return ErrorWrongPassword
+		return service.ErrorWrongPassword
 	}
 
 	err = as.repository.UpdateAccountPassword(ctx, username, newPassword)

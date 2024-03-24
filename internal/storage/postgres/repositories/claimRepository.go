@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"auth-service/internal/domain"
+	"auth-service/internal/domain/entity"
 	"auth-service/internal/storage/postgres/interfaces"
 	"auth-service/internal/storage/postgres/models"
 	"auth-service/lib/db"
@@ -16,7 +16,7 @@ func NewClaimRepository(conn *db.PostgresAdapter) interfaces.ClaimRepository {
 	return &AccountClaimRepository{db: conn}
 }
 
-func (r *AccountClaimRepository) GetClaimsByUsername(ctx context.Context, username string) ([]domain.Claim, error) {
+func (r *AccountClaimRepository) GetClaimsByUsername(ctx context.Context, username string) ([]entity.Claim, error) {
 	sql := `select ac.id, ac.username, ac.claim_title, ac.claim_value
 				from account_claim as ac 
 				where ac.username = $1`
@@ -28,9 +28,9 @@ func (r *AccountClaimRepository) GetClaimsByUsername(ctx context.Context, userna
 		return nil, err
 	}
 
-	claims := make([]domain.Claim, len(dbClaims))
+	claims := make([]entity.Claim, len(dbClaims))
 	for _, dbClaim := range dbClaims {
-		claims = append(claims, domain.Claim{
+		claims = append(claims, entity.Claim{
 			Title: dbClaim.Title,
 			Value: dbClaim.Value,
 		})
@@ -39,12 +39,12 @@ func (r *AccountClaimRepository) GetClaimsByUsername(ctx context.Context, userna
 	return claims, nil
 }
 
-func (r *AccountClaimRepository) AddClaimByUsername(ctx context.Context, username string, claim domain.Claim) error {
+func (r *AccountClaimRepository) AddClaimByUsername(ctx context.Context, username string, claim entity.Claim) error {
 	sql := `insert into account_claim(username, claim_title, claim_value) values ($1, $2, $3)`
 
 	return r.db.Execute(ctx, sql, username, claim.Title, claim.Value)
 }
-func (r *AccountClaimRepository) RemoveClaimByUsername(ctx context.Context, username string, claim domain.Claim) error {
+func (r *AccountClaimRepository) RemoveClaimByUsername(ctx context.Context, username string, claim entity.Claim) error {
 	sql := `delete from account_claim where username = $1 and claim_title= $2 and claim_value = $3`
 
 	return r.db.Execute(ctx, sql, username, claim.Title, claim.Value)

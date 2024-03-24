@@ -2,4 +2,4 @@ package db
 
 import "time"
 
-var TimeoutDbContext = time.Second * 1000
+var TimeoutDbContext = time.Second * 10
