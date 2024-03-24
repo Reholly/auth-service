@@ -19,7 +19,7 @@ func NewRouter(config *config.Config) *Router {
 	}
 }
 
-func (r *Router) Run(authHandler *handler.AuthHandler) error {
+func (r *Router) Run(authHandler *handler.AuthHandler, accountHandler *handler.AccountHandler) error {
 	/*	go func() {
 			_ = r.gin.Run(r.address)
 		}()
@@ -38,11 +38,15 @@ func (r *Router) Run(authHandler *handler.AuthHandler) error {
 	{
 		auth.POST("/login", authHandler.LogIn)
 		auth.POST("/register", authHandler.Register)
-		auth.POST("/reset", authHandler.ResetPassword)
 		auth.GET("/confirm", authHandler.ConfirmEmail)
 	}
+	account := group.Group("/auth/account")
+	{
+		account.PUT("/confirmreset", accountHandler.ConfirmResetPassword)
+		account.PUT("/sendresetcode", accountHandler.SendResetPasswordCode)
+	}
 
-	g.GET("/health", func(c *gin.Context) {
+	g.GET("/auth/health", func(c *gin.Context) {
 		c.Status(http.StatusOK)
 	})
 

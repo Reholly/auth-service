@@ -3,6 +3,7 @@ package application
 import (
 	"auth-service/config"
 	"auth-service/internal/repository"
+	"auth-service/internal/repository/inMemory"
 	repositories2 "auth-service/internal/repository/postgres/implementation"
 	"auth-service/internal/server/handler"
 	"auth-service/internal/server/router"
@@ -11,6 +12,7 @@ import (
 	"auth-service/lib/db"
 	"context"
 	"fmt"
+	"time"
 )
 
 type Application struct {
@@ -33,8 +35,11 @@ func (a *Application) Run() {
 
 	accountRepository := repositories2.NewAccountRepository(postgresAdapter)
 	claimRepository := repositories2.NewClaimRepository(postgresAdapter)
+	codeRepository := inMemory.NewCache(
+		time.Duration(a.config.CodeExpirationTime),
+		time.Duration(a.config.CodeExpirationTime))
 
-	repositoryManager := repository.NewRepositoryManager(accountRepository, claimRepository)
+	repositoryManager := repository.NewRepositoryManager(accountRepository, claimRepository, codeRepository)
 
 	mailService := implementation.NewMailService(a.config)
 	adminService := implementation.NewAdminService(repositoryManager, mailService)
@@ -43,7 +48,15 @@ func (a *Application) Run() {
 
 	serviceManager := service.NewServiceManager(mailService, adminService, authService, tokenService)
 	fmt.Println(serviceManager)
+
 	router := router.NewRouter(a.config)
+
 	authHandler := handler.NewAuthHandler(serviceManager, repositoryManager)
-	router.Run(authHandler)
+	accountHandler := handler.NewAccountHandler(serviceManager, repositoryManager)
+
+	err = router.Run(authHandler, accountHandler)
+
+	if err != nil {
+		panic(err)
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"auth-service/config"
 	"auth-service/internal/domain/entity"
 	"auth-service/internal/domain/helpers"
+	repository2 "auth-service/internal/domain/repository"
 	"auth-service/internal/domain/service"
 	"auth-service/internal/repository"
 	"context"
@@ -11,6 +12,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/url"
+	"time"
 )
 
 type AuthService struct {
@@ -66,12 +68,12 @@ func (as *AuthService) LogIn(ctx context.Context, username, password string) (st
 func (as *AuthService) RegisterAccount(ctx context.Context, username, email, password string) error {
 	exist, err := as.repository.CheckIfExistsAccountWithCredentials(ctx, username, email)
 
-	if err != nil {
-		return err
-	}
-
 	if exist {
 		return service.ErrorAccountAlreadyExists
+	}
+
+	if err != nil {
+		return err
 	}
 
 	err = as.repository.CreateAccount(ctx, username, email, as.hash(password))
@@ -104,30 +106,39 @@ func (as *AuthService) RegisterAccount(ctx context.Context, username, email, pas
 	return nil
 }
 
-func (as *AuthService) ConfirmEmail(ctx context.Context, code, username string) error {
+func (as *AuthService) ConfirmAccountEmail(ctx context.Context, code, username string) error {
 	if as.hash(username) != code {
 		return service.ErrorWrongEmailConfirmation
 	}
+
 	return as.repository.ConfirmAccountEmail(ctx, username)
 }
+func (as *AuthService) GenerateResetPasswordCode(ctx context.Context, username string) (string, error) {
+	code := as.hash(username + as.config.Salt + time.Now().String())
+	as.repository.CodeRepository.Set(username, code, repository2.PasswordReset)
 
-func (as *AuthService) ResetPassword(ctx context.Context, username, oldPassword, newPassword string) error {
-	account, err := as.repository.GetAccountByUsername(ctx, username)
-
-	if err != nil {
-		return err
-	}
-
-	if account.HashedPassword != as.hash(oldPassword) {
-		return service.ErrorWrongPassword
-	}
-
-	err = as.repository.UpdateAccountPassword(ctx, username, newPassword)
-	if err != nil {
-		return err
-	}
-	return nil
+	return code, nil
 }
+
+func (as *AuthService) ResetPassword(ctx context.Context, code, newPassword string) error {
+	usernameFromRepo, err := as.repository.CodeRepository.GetUsernameByCode(code)
+	if err != nil {
+		return err
+	}
+
+	codeFromRepo, err := as.repository.CodeRepository.GetByUsername(usernameFromRepo, repository2.PasswordReset)
+	if err != nil {
+		return err
+	}
+
+	if codeFromRepo != code {
+		return service.ErrorInvalidResetPasswordCode
+	}
+
+	err = as.repository.UpdateAccountPassword(ctx, usernameFromRepo, as.hash(newPassword))
+	return err
+}
+
 func (as *AuthService) DeleteAccountById(ctx context.Context, id uint64) error {
 	err := as.repository.DeleteAccountById(ctx, id)
 	return err

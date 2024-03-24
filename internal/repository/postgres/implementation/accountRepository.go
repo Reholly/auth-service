@@ -30,11 +30,24 @@ func (r *AccountRepository) GetAccountByUsername(ctx context.Context, username s
 
 	return accounts[0].MapToEntity(), err
 }
+func (r *AccountRepository) GetAccountByEmail(ctx context.Context, email string) (entity.Account, error) {
+	sql := `select u.id, u.username, u.is_banned, u.email, u.hashed_password, u.is_email_confirmed
+				from account u 
+				where u.email = $1`
+
+	var accounts []models.Account
+	err := r.db.Query(ctx, &accounts, sql, email)
+
+	if len(accounts) == 0 {
+		return entity.Account{}, repository.ErrorNotFound
+	}
+
+	return accounts[0].MapToEntity(), err
+}
 
 func (r *AccountRepository) CheckIfAccountBanned(ctx context.Context, username string) (bool, error) {
 	sql := `select u.is_banned from account as u
-				where u.username = $1
-				  and u.email = $2`
+				where u.username = $1`
 
 	var accounts []models.Account
 	err := r.db.Query(ctx, &accounts, sql, username)
@@ -50,7 +63,7 @@ func (r *AccountRepository) CheckIfExistsAccountWithCredentials(ctx context.Cont
 	sql := `select u.id, u.username, u.email, u.hashed_password, u.is_banned
 				from account as u 
 				where u.username = $1
-				  and u.email = $2`
+				  or u.email = $2`
 
 	var accounts []models.Account
 	err := r.db.Query(ctx, &accounts, sql, username, email)

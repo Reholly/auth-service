@@ -7,6 +7,7 @@ import (
 
 type AccountRepository interface {
 	GetAccountByUsername(ctx context.Context, username string) (entity.Account, error)
+	GetAccountByEmail(ctx context.Context, email string) (entity.Account, error)
 	CheckIfAccountBanned(ctx context.Context, username string) (bool, error)
 	CheckIfExistsAccountWithCredentials(ctx context.Context, username, email string) (bool, error)
 	ConfirmAccountEmail(ctx context.Context, username string) error

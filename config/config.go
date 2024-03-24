@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	configPath = "config.yaml"
+	configPath = "./config//config.yaml"
 )
 
 type Config struct {
@@ -21,6 +21,8 @@ type Config struct {
 	SmtpHost                 string `yaml:"smtp_host"`
 	SmtpPort                 string `yaml:"smtp_port"`
 	EmailConfirmationUrlBase string `yaml:"email_confirmation_url_base"`
+
+	CodeExpirationTime int64 `yaml:"code_expiration_time""`
 }
 
 func LoadConfig() *Config {
