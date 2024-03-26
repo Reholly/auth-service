@@ -53,8 +53,9 @@ func (a *Application) Run() {
 
 	authHandler := handler.NewAuthHandler(serviceManager, repositoryManager)
 	accountHandler := handler.NewAccountHandler(serviceManager, repositoryManager)
+	adminHandler := handler.NewAdminHandler(repositoryManager, serviceManager)
 
-	err = router.Run(authHandler, accountHandler)
+	err = router.Run(authHandler, accountHandler, adminHandler)
 
 	if err != nil {
 		panic(err)

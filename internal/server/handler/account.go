@@ -3,7 +3,7 @@ package handler
 import (
 	"auth-service/internal/repository"
 	"auth-service/internal/server"
-	"auth-service/internal/server/dto"
+	"auth-service/internal/server/request/dto"
 	"auth-service/internal/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -30,7 +30,7 @@ func NewAccountHandler(service *service.ServiceManager, repository *repository.R
 // @Description Ошибки с эндпоинта: Bad Credentials, Internal Server Error
 // @Accept json
 // @Produce json
-// @Param input body dto.PasswordResetConfirmation true "Reset"
+// @Param input body request.PasswordResetConfirmation true "Reset"
 // @Success 200 {string} ok
 // @Failure 400 {string} bad request: error in credentials
 // @Failure 500 {string} server error: reset error
@@ -67,7 +67,7 @@ func (h *AccountHandler) ConfirmResetPassword(c *gin.Context) {
 // @Description Ошибки с эндпоинта: Bad Credentials, Internal Server Error
 // @Accept json
 // @Produce json
-// @Param input body dto.PasswordResetRequest true "PasswordResetConfirmation"
+// @Param input body request.PasswordResetRequest true "PasswordResetConfirmation"
 // @Success 200 {string} ok
 // @Failure 400 {string} bad request: error in credentials
 // @Failure 500 {string} server error: reset error

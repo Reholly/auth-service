@@ -9,4 +9,6 @@ var (
 	ErrorInvalidResetPasswordCode = errors.New("[ Service: AuthService ] Некорректный код сброса пароля. ")
 
 	ErrorInvalidToken = errors.New("[ Service: TokenService ] Некорректный токен. ")
+
+	ErrorInvalidPermissions = errors.New("[ Service: AdminService] Недостаточно прав для доступа. ")
 )

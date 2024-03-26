@@ -1,8 +1,11 @@
 package service
 
-import domain "auth-service/internal/domain/entity"
+import "auth-service/internal/domain/entity"
 
 type TokenService interface {
-	CreateToken(claims []domain.Claim) (string, error)
-	ParseClaims(jwtToken string) ([]domain.Claim, error)
+	CreateToken(claims []entity.Claim) (string, error)
+	ParseClaims(jwtToken string) ([]entity.Claim, error)
+	IsModerator(claims []entity.Claim) bool
+	IsAdmin(claims []entity.Claim) bool
+	IsInAdministration(claims []entity.Claim) bool
 }

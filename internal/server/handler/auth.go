@@ -3,7 +3,7 @@ package handler
 import (
 	"auth-service/internal/repository"
 	"auth-service/internal/server"
-	"auth-service/internal/server/dto"
+	"auth-service/internal/server/request/dto"
 	"auth-service/internal/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -28,7 +28,7 @@ func NewAuthHandler(service *service.ServiceManager, repository *repository.Repo
 // @Description Ошибки с эндпоинта: Bad Credentials, Internal Server Error
 // @Accept json
 // @Produce json
-// @Param input body dto.Registration true "Register"
+// @Param input body request.Registration true "Register"
 // @Success 200 {string} ok
 // @Failure 400 {string} bad request: error in credentials
 // @Failure 500 {string} server error: registration error
@@ -66,7 +66,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 // @Description Ошибки с эндпоинта: Bad Credentials, Internal Server Error
 // @Accept json
 // @Produce json
-// @Param input body dto.LogIn true "Log In"
+// @Param input body request.LogIn true "Log In"
 // @Success 200 {string} ok
 // @Failure 400 {string} bad request
 // @Failure 500 {string} internal server error
@@ -101,7 +101,7 @@ func (h *AuthHandler) LogIn(c *gin.Context) {
 // @Description code и username, а затем подтверждается эта почта.
 // @Accept json
 // @Produce json
-// @Param input query dto.EmailConfirmation true "Confirm"
+// @Param input query request.EmailConfirmation true "Confirm"
 // @Success 200 {string} ok
 // @Failure 400 {string} bad request
 // @Failure 500 {string} internal server error

@@ -2,7 +2,7 @@ package server
 
 import (
 	"auth-service/internal/domain/service"
-	"auth-service/internal/server/dto"
+	"auth-service/internal/server/request"
 	"errors"
 )
 
@@ -22,7 +22,7 @@ func NewAPIError(err error) APIError {
 	case errors.Is(err, service.ErrorAccountAlreadyExists),
 		errors.Is(err, service.ErrorWrongEmailConfirmation),
 		errors.Is(err, service.ErrorWrongPassword),
-		errors.Is(err, dto.ErrorBadCredentials):
+		errors.Is(err, request.ErrorBadCredentials):
 
 		message = err.Error()
 		code = 400

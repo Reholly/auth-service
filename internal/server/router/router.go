@@ -19,7 +19,7 @@ func NewRouter(config *config.Config) *Router {
 	}
 }
 
-func (r *Router) Run(authHandler *handler.AuthHandler, accountHandler *handler.AccountHandler) error {
+func (r *Router) Run(authHandler *handler.AuthHandler, accountHandler *handler.AccountHandler, adminHandler *handler.AdminHandler) error {
 	/*	go func() {
 			_ = r.gin.Run(r.address)
 		}()
@@ -44,6 +44,12 @@ func (r *Router) Run(authHandler *handler.AuthHandler, accountHandler *handler.A
 	{
 		account.PUT("/confirmreset", accountHandler.ConfirmResetPassword)
 		account.PUT("/sendresetcode", accountHandler.SendResetPasswordCode)
+	}
+
+	admin := group.Group("/auth/admin")
+	{
+		admin.PUT("/createmoder", adminHandler.CreateModerator)
+		admin.PUT("/deletemoder", adminHandler.DeleteModerator)
 	}
 
 	g.GET("/auth/health", func(c *gin.Context) {
